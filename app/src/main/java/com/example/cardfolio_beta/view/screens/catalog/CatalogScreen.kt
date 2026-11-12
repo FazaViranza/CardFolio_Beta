@@ -1,6 +1,7 @@
 package com.example.cardfolio_beta.view.screens.catalog
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,18 +11,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.cardfolio_beta.data.model.PokemonCard
+import coil.compose.AsyncImage
 import com.example.cardfolio_beta.data.catalog.deltaReignCards
+import com.example.cardfolio_beta.data.model.PokemonCard
 
 private val Navy = Color(0xFF101827)
 private val CardBackground = Color(0xFF1C293B)
 private val Gold = Color(0xFFFFC857)
 private val MutedText = Color(0xFF9CA8B8)
 
-// Full 141-card Delta Reign checklist.
 private val catalogCards = deltaReignCards
 
 @Composable
@@ -30,10 +32,20 @@ fun CatalogScreen(modifier: Modifier = Modifier) {
     var selectedExpansion by remember { mutableStateOf("All") }
     var selectedType by remember { mutableStateOf("All") }
     var selectedRarity by remember { mutableStateOf("All") }
+    var selectedCard by remember { mutableStateOf<PokemonCard?>(null) }
+
+    if (selectedCard != null) {
+        CardDetailScreen(
+            card = selectedCard!!,
+            onBack = { selectedCard = null },
+            modifier = modifier
+        )
+        return
+    }
 
     val expansionOptions = listOf("All") + catalogCards.map { it.expansionName }.distinct()
-    val typeOptions = listOf("All") + catalogCards.flatMap { it.types }.distinct()
-    val rarityOptions = listOf("All") + sampleCards.map { it.rarity }.distinct()
+    val typeOptions = listOf("All", "Grass", "Fire", "Water", "Lightning", "Psychic", "Fighting", "Darkness", "Metal", "Dragon", "Colorless")
+    val rarityOptions = listOf("All") + catalogCards.map { it.rarity }.distinct()
 
     val filteredCards = catalogCards.filter { card ->
         val matchesSearch = card.name.contains(searchQuery, ignoreCase = true)
@@ -57,7 +69,7 @@ fun CatalogScreen(modifier: Modifier = Modifier) {
             value = searchQuery,
             onValueChange = { searchQuery = it },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Search Pokémon...") },
+            placeholder = { Text("Search Pokémon or card...") },
             singleLine = true,
             shape = RoundedCornerShape(14.dp),
             colors = OutlinedTextFieldDefaults.colors(
@@ -87,7 +99,9 @@ fun CatalogScreen(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            items(filteredCards, key = { it.id }) { card -> CatalogCardItem(card) }
+            items(filteredCards, key = { it.id }) { card ->
+                CatalogCardItem(card = card, onClick = { selectedCard = card })
+            }
         }
     }
 }
@@ -125,30 +139,61 @@ private fun CatalogFilter(
 }
 
 @Composable
-private fun CatalogCardItem(card: PokemonCard) {
+private fun CatalogCardItem(card: PokemonCard, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = CardBackground)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier.size(76.dp).background(Navy, RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("${card.expansionCode} #${card.cardNumber}", color = Gold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-            }
+            AsyncImage(
+                model = card.imageUrl,
+                contentDescription = card.name,
+                modifier = Modifier.size(width = 76.dp, height = 106.dp).background(Navy, RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Fit
+            )
             Spacer(Modifier.width(14.dp))
-            Column {
+            Column(Modifier.weight(1f)) {
                 Text(card.name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Spacer(Modifier.height(5.dp))
-                Text(card.expansionName, color = MutedText, fontSize = 12.sp)
-                val typeLabel = card.types.joinToString().ifBlank { card.category }
-                Text("$typeLabel • ${card.rarity}", color = Gold, fontSize = 11.sp)
+                Text("${card.expansionCode} #${card.cardNumber}", color = MutedText, fontSize = 12.sp)
+                Text(card.category, color = MutedText, fontSize = 12.sp)
+                Text(card.rarity, color = Gold, fontSize = 11.sp)
             }
         }
+    }
+}
+
+@Composable
+private fun CardDetailScreen(
+    card: PokemonCard,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxSize().background(Navy).padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            TextButton(onClick = onBack) { Text("← Back to Catalog", color = Gold) }
+        }
+        Spacer(Modifier.height(12.dp))
+        AsyncImage(
+            model = card.imageUrl,
+            contentDescription = card.name,
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            contentScale = ContentScale.Fit
+        )
+        Spacer(Modifier.height(16.dp))
+        Text(card.name, color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("${card.expansionName} • ${card.expansionCode} #${card.cardNumber}", color = MutedText)
+        Spacer(Modifier.height(8.dp))
+        Text(card.category, color = MutedText)
+        Text(card.types.joinToString().ifBlank { "Elemental type not verified" }, color = Gold)
+        Text(card.rarity, color = Gold, fontWeight = FontWeight.SemiBold)
+        Spacer(Modifier.height(24.dp))
     }
 }
