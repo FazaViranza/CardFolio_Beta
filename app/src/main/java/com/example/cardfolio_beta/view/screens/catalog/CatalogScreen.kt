@@ -38,6 +38,10 @@ fun CatalogScreen(\n    modifier: Modifier = Modifier,\n    collectionIds: Set<S
         CardDetailScreen(
             card = selectedCard!!,
             onBack = { selectedCard = null },
+            isInCollection = selectedCard!!.id in collectionIds,
+            isInWishlist = selectedCard!!.id in wishlistIds,
+            onCollectionClick = { if (selectedCard!!.id in collectionIds) onRemoveFromCollection(selectedCard!!.id) else onAddToCollection(selectedCard!!.id) },
+            onWishlistClick = { if (selectedCard!!.id in wishlistIds) onRemoveFromWishlist(selectedCard!!.id) else onAddToWishlist(selectedCard!!.id) },
             modifier = modifier
         )
         return
@@ -171,6 +175,10 @@ private fun CatalogCardItem(card: PokemonCard, onClick: () -> Unit) {
 private fun CardDetailScreen(
     card: PokemonCard,
     onBack: () -> Unit,
+    isInCollection: Boolean,
+    isInWishlist: Boolean,
+    onCollectionClick: () -> Unit,
+    onWishlistClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -194,6 +202,13 @@ private fun CardDetailScreen(
         Text(card.category, color = MutedText)
         Text(card.types.joinToString().ifBlank { "Elemental type not verified" }, color = Gold)
         Text(card.rarity, color = Gold, fontWeight = FontWeight.SemiBold)
+        Spacer(Modifier.height(20.dp))
+        Button(onClick = onCollectionClick, modifier = Modifier.fillMaxWidth()) {
+            Text(if (isInCollection) "Remove from Collection" else "Add to Collection")
+        }
+        OutlinedButton(onClick = onWishlistClick, modifier = Modifier.fillMaxWidth()) {
+            Text(if (isInWishlist) "Remove from Wishlist" else "Add to Wishlist")
+        }
         Spacer(Modifier.height(24.dp))
     }
 }
