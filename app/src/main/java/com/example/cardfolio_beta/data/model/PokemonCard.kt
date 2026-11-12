@@ -6,7 +6,8 @@ data class PokemonCard(
     val expansionCode: String,
     val expansionName: String,
     val cardNumber: Int,
-    val pokemonType: String,
+    val category: String,
+    val types: List<String> = emptyList(),
     val rarity: String,
     val imageUrl: String? = null
 )
