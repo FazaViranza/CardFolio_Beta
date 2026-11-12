@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardfolio_beta.ui.theme.CardFolio_BetaTheme
+import com.example.cardfolio_beta.view.screens.catalog.CatalogScreen
 
 private val Navy = Color(0xFF101827)
 private val CardBackground = Color(0xFF1C293B)
@@ -46,7 +47,7 @@ fun CardfolioApp() {
                 containerColor = CardBackground,
                 contentColor = Gold
             ) {
-                val tabs = listOf("Home", "Collection", "Wishlist", "Profile")
+                val tabs = listOf("Home", "Catalog", "Collection", "Wishlist", "Profile")
 
                 tabs.forEachIndexed { index, title ->
                     NavigationBarItem(
@@ -54,7 +55,7 @@ fun CardfolioApp() {
                         onClick = { selectedTab = index },
                         icon = {
                             Text(
-                                text = listOf("⌂", "▣", "♡", "●")[index],
+                                text = listOf("⌂", "⌕", "▣", "♡", "●")[index],
                                 fontSize = 20.sp
                             )
                         },
@@ -73,9 +74,10 @@ fun CardfolioApp() {
     ) { padding ->
         when (selectedTab) {
             0 -> DashboardScreen(Modifier.padding(padding))
-            1 -> SimplePlaceholder("My Collection", Modifier.padding(padding))
-            2 -> SimplePlaceholder("My Wishlist", Modifier.padding(padding))
-            3 -> SimplePlaceholder("My Profile", Modifier.padding(padding))
+            1 -> CatalogScreen(Modifier.padding(padding))
+            2 -> SimplePlaceholder("My Collection", Modifier.padding(padding))
+            3 -> SimplePlaceholder("My Wishlist", Modifier.padding(padding))
+            4 -> SimplePlaceholder("My Profile", Modifier.padding(padding))
         }
     }
 }
