@@ -20,66 +20,40 @@ private val CardBackground = Color(0xFF1C293B)
 private val Gold = Color(0xFFFFC857)
 private val MutedText = Color(0xFF9CA8B8)
 
-// Temporary sample data. We will replace this with the verified full set dataset.
+// Verified sample records. The remaining set records will be added from the checklist.
 private val sampleCards = listOf(
-    PokemonCard("DLR-001", "Heracross", "DLR", "Delta Reign", 1, "Grass", "Common"),
-    PokemonCard("DLR-002", "Surskit", "DLR", "Delta Reign", 2, "Grass", "Common"),
-    PokemonCard("DLR-003", "Masquerain", "DLR", "Delta Reign", 3, "Grass", "Common")
+    PokemonCard("DLR-001", "Heracross", "DLR", "Delta Reign", 1, "Pokemon", listOf("Grass"), "Common"),
+    PokemonCard("DLR-002", "Surskit", "DLR", "Delta Reign", 2, "Pokemon", listOf("Grass"), "Common"),
+    PokemonCard("DLR-003", "Masquerain", "DLR", "Delta Reign", 3, "Pokemon", listOf("Grass"), "Common")
 )
 
 @Composable
-fun CatalogScreen(
-    modifier: Modifier = Modifier
-) {
+fun CatalogScreen(modifier: Modifier = Modifier) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedExpansion by remember { mutableStateOf("All") }
     var selectedType by remember { mutableStateOf("All") }
     var selectedRarity by remember { mutableStateOf("All") }
 
     val expansionOptions = listOf("All") + sampleCards.map { it.expansionName }.distinct()
-    val typeOptions = listOf("All") + sampleCards.map { it.pokemonType }.distinct()
+    val typeOptions = listOf("All") + sampleCards.flatMap { it.types }.distinct()
     val rarityOptions = listOf("All") + sampleCards.map { it.rarity }.distinct()
 
     val filteredCards = sampleCards.filter { card ->
         val matchesSearch = card.name.contains(searchQuery, ignoreCase = true)
         val matchesExpansion = selectedExpansion == "All" || card.expansionName == selectedExpansion
-        val matchesType = selectedType == "All" || card.pokemonType == selectedType
+        val matchesType = selectedType == "All" || selectedType in card.types
         val matchesRarity = selectedRarity == "All" || card.rarity == selectedRarity
-
         matchesSearch && matchesExpansion && matchesType && matchesRarity
     }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Navy)
-            .padding(horizontal = 20.dp)
+        modifier = modifier.fillMaxSize().background(Navy).padding(horizontal = 20.dp)
     ) {
         Spacer(Modifier.height(24.dp))
-
-        Text(
-            text = "CARD CATALOG",
-            color = Gold,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 3.sp
-        )
-
+        Text("CARD CATALOG", color = Gold, fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
         Spacer(Modifier.height(8.dp))
-
-        Text(
-            text = "Explore Cards",
-            color = Color.White,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Text(
-            text = "Find your next favorite card.",
-            color = MutedText,
-            fontSize = 14.sp
-        )
-
+        Text("Explore Cards", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text("Find your next favorite card.", color = MutedText, fontSize = 14.sp)
         Spacer(Modifier.height(20.dp))
 
         OutlinedTextField(
@@ -101,51 +75,22 @@ fun CatalogScreen(
         )
 
         Spacer(Modifier.height(12.dp))
-
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            CatalogFilter(
-                label = "Expansion",
-                options = expansionOptions,
-                selected = selectedExpansion,
-                onSelected = { selectedExpansion = it },
-                modifier = Modifier.weight(1f)
-            )
-            CatalogFilter(
-                label = "Type",
-                options = typeOptions,
-                selected = selectedType,
-                onSelected = { selectedType = it },
-                modifier = Modifier.weight(1f)
-            )
+            CatalogFilter("Expansion", expansionOptions, selectedExpansion, { selectedExpansion = it }, Modifier.weight(1f))
+            CatalogFilter("Type", typeOptions, selectedType, { selectedType = it }, Modifier.weight(1f))
         }
-
         Spacer(Modifier.height(8.dp))
-
-        CatalogFilter(
-            label = "Rarity",
-            options = rarityOptions,
-            selected = selectedRarity,
-            onSelected = { selectedRarity = it },
-            modifier = Modifier.fillMaxWidth()
-        )
+        CatalogFilter("Rarity", rarityOptions, selectedRarity, { selectedRarity = it }, Modifier.fillMaxWidth())
 
         Spacer(Modifier.height(20.dp))
-
-        Text(
-            text = "${filteredCards.size} cards found",
-            color = MutedText,
-            fontSize = 13.sp
-        )
-
+        Text("${filteredCards.size} cards found", color = MutedText, fontSize = 13.sp)
         Spacer(Modifier.height(12.dp))
 
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            items(filteredCards, key = { it.id }) { card ->
-                CatalogCardItem(card)
-            }
+            items(filteredCards, key = { it.id }) { card -> CatalogCardItem(card) }
         }
     }
 }
@@ -159,7 +104,6 @@ private fun CatalogFilter(
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
-
     Box(modifier = modifier) {
         OutlinedButton(
             onClick = { expanded = true },
@@ -167,18 +111,9 @@ private fun CatalogFilter(
             shape = RoundedCornerShape(12.dp),
             contentPadding = PaddingValues(horizontal = 8.dp)
         ) {
-            Text(
-                text = "$label: $selected",
-                color = Gold,
-                fontSize = 12.sp,
-                maxLines = 1
-            )
+            Text("$label: $selected", color = Gold, fontSize = 12.sp, maxLines = 1)
         }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             options.forEach { option ->
                 DropdownMenuItem(
                     text = { Text(option) },
@@ -204,42 +139,18 @@ private fun CatalogCardItem(card: PokemonCard) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier
-                    .size(76.dp)
-                    .background(Navy, RoundedCornerShape(12.dp)),
+                modifier = Modifier.size(76.dp).background(Navy, RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "${card.expansionCode} #${card.cardNumber}",
-                    color = Gold,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Text("${card.expansionCode} #${card.cardNumber}", color = Gold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
-
             Spacer(Modifier.width(14.dp))
-
             Column {
-                Text(
-                    text = card.name,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-
+                Text(card.name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Spacer(Modifier.height(5.dp))
-
-                Text(
-                    text = card.expansionName,
-                    color = MutedText,
-                    fontSize = 12.sp
-                )
-
-                Text(
-                    text = "${card.pokemonType} • ${card.rarity}",
-                    color = Gold,
-                    fontSize = 11.sp
-                )
+                Text(card.expansionName, color = MutedText, fontSize = 12.sp)
+                val typeLabel = card.types.joinToString().ifBlank { card.category }
+                Text("$typeLabel • ${card.rarity}", color = Gold, fontSize = 11.sp)
             }
         }
     }
