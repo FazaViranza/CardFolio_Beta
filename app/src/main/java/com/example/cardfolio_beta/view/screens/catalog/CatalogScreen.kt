@@ -1,4 +1,3 @@
-
 package com.example.cardfolio_beta.view.screens.catalog
 
 import androidx.compose.foundation.background
@@ -14,24 +13,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cardfolio_beta.data.model.PokemonCard
 
 private val Navy = Color(0xFF101827)
 private val CardBackground = Color(0xFF1C293B)
 private val Gold = Color(0xFFFFC857)
 private val MutedText = Color(0xFF9CA8B8)
 
-private data class CatalogCard(
-    val name: String,
-    val expansion: String,
-    val number: String,
-    val type: String,
-    val rarity: String
-)
-
+// Temporary sample data. We will replace this with the verified full set dataset.
 private val sampleCards = listOf(
-    CatalogCard("Heracross", "Delta Reign", "DLR #1", "Grass", "Common"),
-    CatalogCard("Surskit", "Delta Reign", "DLR #2", "Grass", "Common"),
-    CatalogCard("Masquerain", "Delta Reign", "DLR #3", "Grass", "Common")
+    PokemonCard("DLR-001", "Heracross", "DLR", "Delta Reign", 1, "Grass", "Common"),
+    PokemonCard("DLR-002", "Surskit", "DLR", "Delta Reign", 2, "Grass", "Common"),
+    PokemonCard("DLR-003", "Masquerain", "DLR", "Delta Reign", 3, "Grass", "Common")
 )
 
 @Composable
@@ -39,20 +32,21 @@ fun CatalogScreen(
     modifier: Modifier = Modifier
 ) {
     var searchQuery by remember { mutableStateOf("") }
+    var selectedExpansion by remember { mutableStateOf("All") }
     var selectedType by remember { mutableStateOf("All") }
     var selectedRarity by remember { mutableStateOf("All") }
 
+    val expansionOptions = listOf("All") + sampleCards.map { it.expansionName }.distinct()
+    val typeOptions = listOf("All") + sampleCards.map { it.pokemonType }.distinct()
+    val rarityOptions = listOf("All") + sampleCards.map { it.rarity }.distinct()
+
     val filteredCards = sampleCards.filter { card ->
-        val matchesSearch =
-            card.name.contains(searchQuery, ignoreCase = true)
+        val matchesSearch = card.name.contains(searchQuery, ignoreCase = true)
+        val matchesExpansion = selectedExpansion == "All" || card.expansionName == selectedExpansion
+        val matchesType = selectedType == "All" || card.pokemonType == selectedType
+        val matchesRarity = selectedRarity == "All" || card.rarity == selectedRarity
 
-        val matchesType =
-            selectedType == "All" || card.type == selectedType
-
-        val matchesRarity =
-            selectedRarity == "All" || card.rarity == selectedRarity
-
-        matchesSearch && matchesType && matchesRarity
+        matchesSearch && matchesExpansion && matchesType && matchesRarity
     }
 
     Column(
@@ -108,25 +102,32 @@ fun CatalogScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            CatalogFilter(
+                label = "Expansion",
+                options = expansionOptions,
+                selected = selectedExpansion,
+                onSelected = { selectedExpansion = it },
+                modifier = Modifier.weight(1f)
+            )
             CatalogFilter(
                 label = "Type",
-                options = listOf("All", "Grass"),
+                options = typeOptions,
                 selected = selectedType,
                 onSelected = { selectedType = it },
                 modifier = Modifier.weight(1f)
             )
-
-            CatalogFilter(
-                label = "Rarity",
-                options = listOf("All", "Common"),
-                selected = selectedRarity,
-                onSelected = { selectedRarity = it },
-                modifier = Modifier.weight(1f)
-            )
         }
+
+        Spacer(Modifier.height(8.dp))
+
+        CatalogFilter(
+            label = "Rarity",
+            options = rarityOptions,
+            selected = selectedRarity,
+            onSelected = { selectedRarity = it },
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(Modifier.height(20.dp))
 
@@ -142,7 +143,7 @@ fun CatalogScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            items(filteredCards) { card ->
+            items(filteredCards, key = { it.id }) { card ->
                 CatalogCardItem(card)
             }
         }
@@ -169,7 +170,8 @@ private fun CatalogFilter(
             Text(
                 text = "$label: $selected",
                 color = Gold,
-                fontSize = 12.sp
+                fontSize = 12.sp,
+                maxLines = 1
             )
         }
 
@@ -191,13 +193,11 @@ private fun CatalogFilter(
 }
 
 @Composable
-private fun CatalogCardItem(card: CatalogCard) {
+private fun CatalogCardItem(card: PokemonCard) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = CardBackground
-        )
+        colors = CardDefaults.cardColors(containerColor = CardBackground)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -210,9 +210,9 @@ private fun CatalogCardItem(card: CatalogCard) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = card.number,
+                    text = "${card.expansionCode} #${card.cardNumber}",
                     color = Gold,
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -230,13 +230,13 @@ private fun CatalogCardItem(card: CatalogCard) {
                 Spacer(Modifier.height(5.dp))
 
                 Text(
-                    text = card.expansion,
+                    text = card.expansionName,
                     color = MutedText,
                     fontSize = 12.sp
                 )
 
                 Text(
-                    text = "${card.type} • ${card.rarity}",
+                    text = "${card.pokemonType} • ${card.rarity}",
                     color = Gold,
                     fontSize = 11.sp
                 )
