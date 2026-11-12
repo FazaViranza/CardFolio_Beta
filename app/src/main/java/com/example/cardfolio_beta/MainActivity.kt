@@ -19,6 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardfolio_beta.ui.theme.CardFolio_BetaTheme
 import com.example.cardfolio_beta.view.screens.catalog.CatalogScreen
+import com.example.cardfolio_beta.view.screens.collection.CollectionScreen
+import com.example.cardfolio_beta.view.screens.wishlist.WishlistScreen
+import com.example.cardfolio_beta.viewmodel.CardfolioViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 private val Navy = Color(0xFF101827)
 private val CardBackground = Color(0xFF1C293B)
@@ -39,6 +43,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CardfolioApp() {
     var selectedTab by remember { mutableIntStateOf(0) }
+    val cardfolioViewModel: CardfolioViewModel = viewModel()
+    val collectionIds by cardfolioViewModel.collectionIds.collectAsState()
+    val wishlistIds by cardfolioViewModel.wishlistIds.collectAsState()
 
     Scaffold(
         containerColor = Navy,
@@ -74,9 +81,17 @@ fun CardfolioApp() {
     ) { padding ->
         when (selectedTab) {
             0 -> DashboardScreen(Modifier.padding(padding))
-            1 -> CatalogScreen(Modifier.padding(padding))
-            2 -> SimplePlaceholder("My Collection", Modifier.padding(padding))
-            3 -> SimplePlaceholder("My Wishlist", Modifier.padding(padding))
+            1 -> CatalogScreen(
+                modifier = Modifier.padding(padding),
+                collectionIds = collectionIds,
+                wishlistIds = wishlistIds,
+                onAddToCollection = cardfolioViewModel::addToCollection,
+                onRemoveFromCollection = cardfolioViewModel::removeFromCollection,
+                onAddToWishlist = cardfolioViewModel::addToWishlist,
+                onRemoveFromWishlist = cardfolioViewModel::removeFromWishlist
+            )
+            2 -> CollectionScreen(collectionIds, cardfolioViewModel::removeFromCollection, Modifier.padding(padding))
+            3 -> WishlistScreen(wishlistIds, cardfolioViewModel::removeFromWishlist, Modifier.padding(padding))
             4 -> SimplePlaceholder("My Profile", Modifier.padding(padding))
         }
     }
