@@ -27,7 +27,15 @@ private val MutedText = Color(0xFF9CA8B8)
 private val catalogCards = deltaReignCards
 
 @Composable
-fun CatalogScreen(\n    modifier: Modifier = Modifier,\n    collectionIds: Set<String> = emptySet(),\n    wishlistIds: Set<String> = emptySet(),\n    onAddToCollection: (String) -> Unit = {},\n    onRemoveFromCollection: (String) -> Unit = {},\n    onAddToWishlist: (String) -> Unit = {},\n    onRemoveFromWishlist: (String) -> Unit = {}\n) {
+fun CatalogScreen(
+    modifier: Modifier = Modifier,
+    collectionIds: Set<String> = emptySet(),
+    wishlistIds: Set<String> = emptySet(),
+    onAddToCollection: (String) -> Unit = {},
+    onRemoveFromCollection: (String) -> Unit = {},
+    onAddToWishlist: (String) -> Unit = {},
+    onRemoveFromWishlist: (String) -> Unit = {}
+) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedExpansion by remember { mutableStateOf("All") }
     var selectedType by remember { mutableStateOf("All") }
