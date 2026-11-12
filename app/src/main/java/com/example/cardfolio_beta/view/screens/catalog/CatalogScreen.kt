@@ -14,18 +14,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardfolio_beta.data.model.PokemonCard
+import com.example.cardfolio_beta.data.catalog.deltaReignCards
 
 private val Navy = Color(0xFF101827)
 private val CardBackground = Color(0xFF1C293B)
 private val Gold = Color(0xFFFFC857)
 private val MutedText = Color(0xFF9CA8B8)
 
-// Verified sample records. The remaining set records will be added from the checklist.
-private val sampleCards = listOf(
-    PokemonCard("DLR-001", "Heracross", "DLR", "Delta Reign", 1, "Pokemon", listOf("Grass"), "Common"),
-    PokemonCard("DLR-002", "Surskit", "DLR", "Delta Reign", 2, "Pokemon", listOf("Grass"), "Common"),
-    PokemonCard("DLR-003", "Masquerain", "DLR", "Delta Reign", 3, "Pokemon", listOf("Grass"), "Common")
-)
+// Full 141-card Delta Reign checklist.
+private val catalogCards = deltaReignCards
 
 @Composable
 fun CatalogScreen(modifier: Modifier = Modifier) {
@@ -34,11 +31,11 @@ fun CatalogScreen(modifier: Modifier = Modifier) {
     var selectedType by remember { mutableStateOf("All") }
     var selectedRarity by remember { mutableStateOf("All") }
 
-    val expansionOptions = listOf("All") + sampleCards.map { it.expansionName }.distinct()
-    val typeOptions = listOf("All") + sampleCards.flatMap { it.types }.distinct()
+    val expansionOptions = listOf("All") + catalogCards.map { it.expansionName }.distinct()
+    val typeOptions = listOf("All") + catalogCards.flatMap { it.types }.distinct()
     val rarityOptions = listOf("All") + sampleCards.map { it.rarity }.distinct()
 
-    val filteredCards = sampleCards.filter { card ->
+    val filteredCards = catalogCards.filter { card ->
         val matchesSearch = card.name.contains(searchQuery, ignoreCase = true)
         val matchesExpansion = selectedExpansion == "All" || card.expansionName == selectedExpansion
         val matchesType = selectedType == "All" || selectedType in card.types
