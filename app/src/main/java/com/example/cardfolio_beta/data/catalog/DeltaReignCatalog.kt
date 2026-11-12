@@ -166,6 +166,6 @@ val deltaReignCards: List<PokemonCard> = """
         category = category,
         types = emptyList(),
         rarity = rarity,
-        imageUrl = "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/DLR/DLR_${imageNumber}_R_EN_SM.png"
+        imageUrl = "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/DLR/DLR_${imageNumber}_R_EN.png"
     )
 }
